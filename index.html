@@ -33,7 +33,7 @@ input{width:100%;padding:12px;border:1px solid #cbd7df;border-radius:10px;font:i
 <button id="start" class="btn primary" style="width:100%">EMPEZAR TEST →</button>
 <p class="muted">Puntuación: 0 fallos = 5 puntos · 1 fallo = 3 · 2 fallos = 2 · 3 fallos = 1 · 4 o más = PAKETE 👎</p>
 </div>
-<div class="panel"><div class="row"><h2>🏆 Ranking de jugadores</h2><button id="refresh" class="btn">Actualizar</button></div><div id="ranking"><p class="muted">Cargando ranking…</p></div><p id="rankMode" class="muted">El ranking local se guarda en este navegador. Para compartirlo entre dispositivos, configura Supabase siguiendo las instrucciones que acompañan al archivo.</p></div>
+<div class="panel"><div class="row"><h2>🏆 Ranking de jugadores</h2><button id="refresh" class="btn">Actualizar</button></div><div id="ranking"><p class="muted">Cargando ranking…</p></div><p id="rankMode" class="muted">Conectando con el ranking global…</p></div>
 <div class="panel"><h3>📚 Fuentes</h3><p class="muted">Las preguntas se basan en la normativa española de tráfico. Tras cada respuesta verás la norma concreta.</p><ul class="muted" style="padding-left:20px;line-height:1.6;margin:8px 0 0">
 <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2015-11722" target="_blank" rel="noopener">Ley sobre Tráfico y Seguridad Vial (RDL 6/2015)</a></li>
 <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2003-23514" target="_blank" rel="noopener">Reglamento General de Circulación (RD 1428/2003)</a></li>
@@ -239,7 +239,7 @@ async function renderRanking(target="ranking"){
    el.innerHTML=rows.length?rows.map((x,i)=>'<div class="rankrow"><span><b>'+(["🥇","🥈","🥉"][i]||("#"+(i+1)))+'</b></span><div><b>'+safe(x.name)+'</b><div class="muted">'+x.faults+' fallos · '+x.rights+'/30 aciertos</div></div><b>'+x.points+' pts</b></div>').join(""):'<p class="muted">Aún no hay resultados. ¡Sé el primero!</p>';
    $("rankMode").textContent="Ranking global conectado a Firebase Cloud Firestore.";
    return;
-  }catch(e){console.error(e);el.innerHTML='<p class="muted">No se pudo leer Firestore. Comprueba la configuración y las reglas de seguridad.</p>';return}
+  }catch(e){console.error(e);el.innerHTML='<p class="muted">No se pudo leer Firestore. Comprueba la configuración y las reglas de seguridad.</p><p class="muted"><b>Código de error:</b> '+safe((e&&e.code)||(e&&e.message)||"desconocido")+'</p>';$("rankMode").textContent="Ranking global: error al conectar con Firebase.";return}
  }
  const r=sortedRanks(getRanks());
  el.innerHTML=r.length?r.map((x,i)=>'<div class="rankrow"><span><b>'+(["🥇","🥈","🥉"][i]||("#"+(i+1)))+'</b></span><div><b>'+safe(x.name)+'</b><div class="muted">'+x.faults+' fallos · '+x.rights+'/30 aciertos</div></div><b>'+x.points+' pts</b></div>').join(""):'<p class="muted">Todavía no hay resultados. ¡Sé el primero en entrar en el ranking!</p>';
