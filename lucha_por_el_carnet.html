@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUCHA POR EL CARNET</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#172536;background:#f2f6f8}
+*{box-sizing:border-box}body{margin:0;padding:18px}.wrap{max-width:850px;margin:auto}
+.hero{background:linear-gradient(135deg,#142d48,#176d80);color:white;padding:28px 18px;border-radius:18px;text-align:center}
+.hero h1{font-size:clamp(27px,5vw,42px);margin:8px 0;font-weight:950;letter-spacing:-1px}.hero p{margin:7px;color:#d9edf4}
+.panel{background:white;border:1px solid #dce5ea;border-radius:15px;padding:18px;margin-top:16px}
+.muted{color:#607180;font-size:14px}.btn{padding:12px 16px;border-radius:10px;border:1px solid #cbd7df;background:white;color:#172536;font-weight:750;cursor:pointer}
+.primary{background:#16768a;color:white;border-color:#16768a}.btn:disabled{opacity:.45;cursor:not-allowed}
+input{width:100%;padding:12px;border:1px solid #cbd7df;border-radius:10px;font:inherit;margin:7px 0 12px}
+.answer{display:flex;gap:10px;text-align:left;width:100%;padding:13px;border:1px solid #dce5ea;border-radius:11px;background:white;color:#172536;cursor:pointer;margin-top:9px;line-height:1.45;font:inherit}
+.answer .letter{font-weight:900;border-radius:7px;background:#edf3f6;padding:2px 8px;flex-shrink:0}
+.answer.correct{border:2px solid #299767;background:#effaf4}.answer.wrong{border:2px solid #d94c4c;background:#fff2f2}
+.answer:disabled{cursor:default}.bar{height:7px;background:#dce5ea;border-radius:20px;overflow:hidden;margin:12px 0}.bar div{height:100%;background:#19a0a8}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.pill{font-size:12px;padding:5px 9px;border-radius:99px;background:#edf3f6;font-weight:700}
+.hidden{display:none!important}.bigscore{font-size:52px;font-weight:950;line-height:1.15}.review{padding:13px;border:1px solid #dce5ea;border-radius:12px;margin-top:10px}
+.rankrow{display:grid;grid-template-columns:35px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #e2e8ec}
+@media(max-width:500px){body{padding:10px}.panel{padding:14px}.hero{padding:22px 12px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="hero"><div style="font-size:38px">🚘 🏁</div><h1>LUCHA POR EL CARNET</h1><p>¿Tienes lo que hay que tener para aprobar?</p><p>30 preguntas · Permiso B · España</p></header>
+
+<section id="home">
+<div class="panel">
+<h2>🎮 ¡Empieza el reto!</h2><p class="muted">30 preguntas de práctica inspiradas en las normas de circulación españolas. Al acabar podrás revisar todos tus errores.</p>
+<label for="player"><b>Tu nombre para el ranking</b></label><input id="player" maxlength="24" placeholder="Ej. ConductorPro" autocomplete="nickname">
+<button id="start" class="btn primary" style="width:100%">EMPEZAR TEST →</button>
+<p class="muted">Puntuación: 0 fallos = 5 puntos · 1 fallo = 3 · 2 fallos = 2 · 3 fallos = 1 · 4 o más = PAKETE 👎</p>
+</div>
+<div class="panel"><div class="row"><h2>🏆 Ranking de jugadores</h2><button id="refresh" class="btn">Actualizar</button></div><div id="ranking"><p class="muted">Cargando ranking…</p></div><p id="rankMode" class="muted">El ranking local se guarda en este navegador. Para compartirlo entre dispositivos, configura Supabase siguiendo las instrucciones que acompañan al archivo.</p></div>
+<div class="panel"><h3>📋 Reglas</h3><p class="muted">Cada test contiene 30 preguntas y una respuesta correcta por pregunta. Las preguntas son educativas, no preguntas oficiales reproducidas de la DGT.</p></div>
+</section>
+
+<section id="game" class="hidden">
+<div class="row"><b id="counter">Pregunta 1 de 30</b><span id="errors" class="pill">Fallos: 0</span></div><div class="bar"><div id="progress" style="width:0%"></div></div>
+<div class="panel"><div class="row"><span id="category" class="pill">SEGURIDAD VIAL</span><span class="muted">Elige una respuesta</span></div><h2 id="question"></h2><div id="answers"></div><div id="feedback" class="hidden" style="background:#edf3f6;padding:13px;border-radius:10px;margin-top:14px"></div><div style="text-align:right;margin-top:18px"><button id="next" class="btn primary" disabled>Confirmar respuesta →</button></div></div>
+<p class="muted" style="text-align:center">Conduce con cabeza. Cada pregunta cuenta.</p>
+</section>
+
+<section id="result" class="hidden">
+<div id="resultHero" class="panel" style="text-align:center"></div>
+<div class="panel"><h2>📊 Resultado del examen</h2><div class="row" style="justify-content:space-around;text-align:center"><div><b id="rightCount" style="font-size:26px">0</b><div class="muted">Aciertos</div></div><div><b id="wrongCount" style="font-size:26px">0</b><div class="muted">Fallos</div></div><div><b id="pointCount" style="font-size:26px">0</b><div class="muted">Puntos</div></div></div><p id="resultMessage" class="muted"></p><p id="saveStatus" class="muted"></p></div>
+<div class="panel"><h2>🔎 Revisión de errores</h2><p class="muted">Tus respuestas incorrectas y la explicación de cada una.</p><div id="mistakes"></div></div>
+<div class="row" style="margin-top:16px"><button id="again" class="btn primary">🔄 Jugar otra vez</button><button id="toRanking" class="btn">🏆 Ver ranking</button></div>
+<div id="endRanking" class="panel hidden"><h2>🏆 Ranking</h2><div id="ranking2"></div></div>
+</section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
+<script>
+/* FIREBASE:
+   Copia aquí la configuración de tu aplicación web de Firebase.
+   firebaseConfig no es una contraseña. Protege la base de datos con reglas.
+*/
+const firebaseConfig = {
+  apiKey: "AIzaSyCuG9GHgQHSdvQn4Fz3yfBACWD9tXDjc3Y",
+  authDomain: "lucha-por-el-carnet.firebaseapp.com",
+  projectId: "lucha-por-el-carnet",
+  appId: "1:210534818345:web:c4156f526131aebaf07238"
+};
+let db = null;
+try {
+  if (firebaseConfig.apiKey !== "PEGA_AQUI_API_KEY" &&
+      firebaseConfig.projectId !== "PEGA_AQUI_PROJECT_ID") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+  }
+} catch (e) {
+  console.error("No se pudo inicializar Firebase:", e);
+}
+
+const Q = [
+{c:"Señales",q:"Ante una señal de STOP, ¿qué debes hacer?",a:["Reducir la velocidad y continuar si no viene nadie.","Detenerte completamente y comprobar que puedes continuar con seguridad.","Detenerte solo si hay peatones."],k:1,e:"La señal de STOP obliga a detener el vehículo por completo y a ceder el paso. No basta con reducir la velocidad."},
+{c:"Velocidad",q:"Como norma general, ¿cuál es la velocidad máxima de un turismo en autopista?",a:["100 km/h.","120 km/h.","130 km/h."],k:1,e:"El límite genérico para turismos en autopistas y autovías es 120 km/h, salvo señalización específica."},
+{c:"Alcohol y drogas",q:"¿Qué debes hacer si has consumido drogas y vas a conducir?",a:["Conducir despacio para compensar sus efectos.","Esperar media hora y conducir.","No conducir."],k:2,e:"Las drogas pueden alterar la percepción, la atención y los reflejos. No debes conducir bajo sus efectos."},
+{c:"Prioridad",q:"En una intersección sin señalizar, como regla general, ¿quién tiene prioridad?",a:["El vehículo que se aproxima por la derecha, salvo excepciones.","El vehículo más grande.","El vehículo que circula más rápido."],k:0,e:"Como regla general, se cede el paso a los vehículos que se aproximan por la derecha, con las excepciones previstas en la normativa."},
+{c:"Seguridad",q:"¿Cuándo deben usar el cinturón de seguridad los ocupantes de un turismo?",a:["Solo en carretera.","Solo los ocupantes de los asientos delanteros.","Como regla general, en todos los asientos que dispongan de él."],k:2,e:"El cinturón es obligatorio, como regla general, tanto en los asientos delanteros como en los traseros."},
+{c:"Señales",q:"¿Qué indica una señal circular con borde rojo y el número 50?",a:["Velocidad mínima de 50 km/h.","Velocidad máxima de 50 km/h.","Velocidad recomendada de 50 km/h."],k:1,e:"La señal circular con borde rojo y una cifra indica la velocidad máxima permitida."},
+{c:"Adelantamientos",q:"¿Cuándo está permitido adelantar por la derecha?",a:["Siempre que tengas prisa.","Nunca, sin excepciones.","En situaciones permitidas, por ejemplo, en determinadas vías urbanas con varios carriles delimitados para el mismo sentido."],k:2,e:"El adelantamiento se realiza normalmente por la izquierda, pero existen supuestos específicos en los que se permite adelantar por la derecha."},
+{c:"Peatones",q:"Te aproximas a un paso de peatones y una persona está cruzando. ¿Qué haces?",a:["Tocar el claxon para que se dé prisa.","Detenerte y cederle el paso.","Pasar si calculas que hay espacio."],k:1,e:"Debes ceder el paso a los peatones que estén cruzando por un paso debidamente señalizado."},
+{c:"Emergencias",q:"Se aproxima una ambulancia en servicio urgente con señales luminosas y acústicas. ¿Cómo actúas?",a:["Facilitas su paso de forma segura.","Aceleras para ir delante de ella.","Te detienes inmediatamente en cualquier lugar, aunque bloquees el paso."],k:0,e:"Debes facilitar el paso al vehículo prioritario, apartándote de forma segura sin crear nuevos riesgos."},
+{c:"Luces",q:"¿Cuándo debes utilizar el alumbrado de cruce?",a:["Únicamente cuando llueve de noche.","De noche y en las circunstancias en que la normativa lo exige, como en túneles señalizados.","Solo en autopistas."],k:1,e:"El alumbrado de cruce debe utilizarse de noche y en túneles, así como en las demás circunstancias exigidas por la normativa."},
+{c:"Distancia",q:"¿Qué distancia debes mantener con el vehículo que circula delante?",a:["La que permita detenerte sin colisionar si frena bruscamente.","Exactamente dos metros.","La mínima posible para evitar que se interpongan otros vehículos."],k:0,e:"Debes dejar una distancia de seguridad suficiente para poder detenerte ante una frenada imprevista."},
+{c:"Móvil",q:"¿Puedes sujetar el teléfono móvil con la mano mientras conduces?",a:["Sí, si solo miras la pantalla un instante.","Sí, si circulas despacio.","No."],k:2,e:"Está prohibido utilizar el móvil sujetándolo con la mano durante la conducción, salvo las excepciones legalmente previstas."},
+{c:"Clima",q:"En una carretera mojada, ¿qué ocurre con la distancia de frenado?",a:["Generalmente aumenta.","Siempre disminuye.","No cambia."],k:0,e:"La menor adherencia sobre pavimento mojado puede aumentar considerablemente la distancia de frenado."},
+{c:"Neumáticos",q:"¿Qué riesgo supone circular con neumáticos muy desgastados?",a:["Mejora la adherencia en lluvia.","Aumenta el riesgo de aquaplaning y empeora la adherencia.","Ninguno si los neumáticos están inflados."],k:1,e:"Un dibujo insuficiente reduce la capacidad de evacuar agua y puede perjudicar la adherencia y la seguridad."},
+{c:"Rotondas",q:"Al entrar en una glorieta, si no hay señalización que indique otra cosa, ¿a quién debes ceder el paso?",a:["A los vehículos que ya circulan por ella.","A los que esperan detrás de ti.","A los vehículos que van a entrar por tu derecha, siempre."],k:0,e:"Como regla general, debes ceder el paso a los vehículos que ya circulan por la glorieta."},
+{c:"Carriles",q:"En una autopista, ¿por qué carril debes circular normalmente?",a:["Por el izquierdo.","Por el derecho, utilizando los demás para adelantar cuando corresponda.","Por el carril central en todo momento."],k:1,e:"La norma general es circular por el carril situado más a la derecha, dejando los demás para las maniobras permitidas."},
+{c:"Estacionamiento",q:"¿Puedes estacionar delante de una salida de emergencia señalizada?",a:["Sí, si dejas las luces de emergencia encendidas.","Sí, durante cinco minutos.","No, si obstaculizas la salida o infringes la señalización aplicable."],k:2,e:"No debes bloquear una salida de emergencia ni estacionar donde lo prohíban las normas o señales."},
+{c:"Alcohol",q:"¿Qué efecto puede tener el alcohol, incluso en cantidades pequeñas?",a:["Mejora la capacidad de reacción.","Puede reducir la atención y los reflejos.","Solo afecta a conductores noveles."],k:1,e:"El alcohol puede alterar las capacidades necesarias para conducir. La opción más segura es no consumirlo antes de conducir."},
+{c:"Accidentes",q:"Presencias un accidente con heridos. ¿Qué conducta general es correcta?",a:["Proteger la zona, avisar a emergencias y socorrer sin agravar la situación.","Mover siempre a los heridos inmediatamente.","Marcharte si no has participado."],k:0,e:"La conducta PAS consiste en proteger, avisar y socorrer, evitando riesgos y movimientos innecesarios de los heridos."},
+{c:"Vías urbanas",q:"En una calle urbana con un único carril por sentido, sin señalización específica, ¿cuál es el límite genérico para un turismo?",a:["20 km/h.","30 km/h.","50 km/h."],k:1,e:"El límite genérico es 30 km/h en vías urbanas de un único carril por sentido, salvo las excepciones previstas y la señalización."},
+{c:"Seguridad infantil",q:"¿Cómo deben viajar los menores de estatura igual o inferior a 135 cm en un turismo?",a:["Siempre en el asiento delantero con cinturón de adulto.","Como norma general, con un sistema de retención infantil adecuado y en los asientos traseros, con las excepciones legales.","En cualquier asiento sin sistema especial."],k:1,e:"La norma general exige un sistema de retención infantil adecuado y viajar en los asientos traseros, con excepciones reglamentarias."},
+{c:"Averías",q:"Tu vehículo queda inmovilizado en una vía y necesitas señalizar el peligro. ¿Qué debes tener en cuenta?",a:["La normativa vigente sobre señalización de vehículos inmovilizados y el uso de la baliza V-16 conectada cuando resulte obligatoria.","Colocar siempre un triángulo a cualquier distancia sin valorar el riesgo.","No señalizar si es de día."],k:0,e:"La señalización debe cumplir la normativa vigente. En España, la baliza V-16 conectada es el medio reglamentario obligatorio de señalización de vehículos inmovilizados desde el 1 de enero de 2026."},
+{c:"Adelantamientos",q:"Antes de adelantar a otro vehículo, ¿qué debes comprobar?",a:["Que la maniobra está permitida, hay visibilidad y espacio suficientes y no pones a nadie en peligro.","Solo que el motor tenga suficiente potencia.","Que el vehículo de detrás frene."],k:0,e:"Antes de adelantar debes comprobar la visibilidad, la distancia, la señalización y que puedas completar la maniobra con seguridad."},
+{c:"Señales",q:"Una señal triangular con borde rojo advierte, por lo general, de:",a:["Una obligación.","Un peligro.","El fin de una prohibición."],k:1,e:"Las señales triangulares con borde rojo suelen advertir de peligros en la vía."},
+{c:"Túneles",q:"Al aproximarte a un túnel, ¿qué debes hacer?",a:["Encender el alumbrado correspondiente y respetar las señales y la distancia de seguridad.","Parar para que los ojos se adapten.","Utilizar las luces largas siempre."],k:0,e:"En los túneles debes utilizar el alumbrado obligatorio, respetar los límites y mantener una distancia de seguridad adecuada."},
+{c:"Fatiga",q:"En un viaje largo empiezas a sentir sueño. ¿Cuál es la mejor decisión?",a:["Abrir la ventanilla y continuar sin parar.","Aumentar la velocidad para llegar antes.","Detenerte en un lugar seguro y descansar."],k:2,e:"La fatiga y la somnolencia reducen la atención y los reflejos. Debes parar en un lugar seguro y descansar."},
+{c:"Mantenimiento",q:"¿Qué debes hacer si se enciende un testigo rojo que indica un problema grave del motor o de la presión del aceite?",a:["Ignorarlo si el coche sigue andando.","Detenerte en un lugar seguro y consultar las indicaciones del vehículo.","Acelerar para que desaparezca."],k:1,e:"Un testigo rojo de advertencia grave requiere actuar de inmediato conforme al manual del vehículo y detenerse de forma segura cuando corresponda."},
+{c:"Usuarios vulnerables",q:"Al adelantar a un ciclista, ¿qué debes hacer?",a:["Mantener una separación lateral suficiente y cumplir las reglas de adelantamiento aplicables.","Pasar muy cerca si no viene nadie de frente.","Tocar el claxon y mantener la velocidad."],k:0,e:"Debes respetar la separación lateral mínima legal y las condiciones de seguridad exigidas para adelantar a ciclistas."},
+{c:"Prioridad",q:"En un paso estrecho sin señalización, cuando resulta imposible cruzarse al mismo tiempo, ¿cómo debes proceder?",a:["Avanzar siempre porque un turismo tiene prioridad sobre otros vehículos.","Aplicar las reglas de prioridad previstas y actuar con prudencia, atendiendo también a la pendiente cuando corresponda.","Retroceder siempre, sea cual sea la situación."],k:1,e:"En pasos estrechos sin señalización hay reglas específicas de prioridad y, en determinadas situaciones, influye la pendiente. Debes evitar forzar el cruce."},
+{c:"Documentación",q:"¿Qué documentación debes llevar o tener disponible para circular legalmente?",a:["La documentación exigible del conductor y del vehículo, conforme a la normativa vigente.","Únicamente el DNI.","Solo el recibo del combustible."],k:0,e:"Debes cumplir los requisitos de permiso de conducción y documentación del vehículo exigidos por la normativa. Algunos documentos pueden consultarse electrónicamente cuando esté permitido."},
+{c:"Conducción segura",q:"Al acercarte a un semáforo que cambia a amarillo fijo, ¿qué debes hacer?",a:["Acelerar siempre para pasar antes del rojo.","Detenerte, salvo que no puedas hacerlo en condiciones de seguridad suficientes.","Frenar bruscamente sin mirar detrás."],k:1,e:"El amarillo fijo obliga a detenerse, salvo que al encenderse estés tan cerca que no puedas hacerlo con seguridad suficiente."}
+];
+let order=[],idx=0,chosen=null,misses=[],player="",finished=false;
+const $=id=>document.getElementById(id);
+function safe(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function getRanks(){try{return JSON.parse(localStorage.getItem("luchaCarnetRanks")||"[]")}catch(e){return []}}
+function pointsFor(f){return f===0?5:f===1?3:f===2?2:f===3?1:0}
+function sortedRanks(r){return r.sort((a,b)=>b.points-a.points||a.faults-b.faults||a.date-b.date).slice(0,20)}
+async function renderRanking(target="ranking"){
+ const el=$(target);
+ if(db){
+  try{
+   const snap=await db.collection("scores").orderBy("points","desc").orderBy("faults","asc").orderBy("createdAt","asc").limit(20).get();
+   const rows=snap.docs.map(d=>d.data());
+   el.innerHTML=rows.length?rows.map((x,i)=>'<div class="rankrow"><span><b>'+(["🥇","🥈","🥉"][i]||("#"+(i+1)))+'</b></span><div><b>'+safe(x.name)+'</b><div class="muted">'+x.faults+' fallos · '+x.rights+'/30 aciertos</div></div><b>'+x.points+' pts</b></div>').join(""):'<p class="muted">Aún no hay resultados. ¡Sé el primero!</p>';
+   $("rankMode").textContent="Ranking global conectado a Firebase Cloud Firestore.";
+   return;
+  }catch(e){console.error(e);el.innerHTML='<p class="muted">No se pudo leer Firestore. Comprueba la configuración y las reglas de seguridad.</p>';return}
+ }
+ const r=sortedRanks(getRanks());
+ el.innerHTML=r.length?r.map((x,i)=>'<div class="rankrow"><span><b>'+(["🥇","🥈","🥉"][i]||("#"+(i+1)))+'</b></span><div><b>'+safe(x.name)+'</b><div class="muted">'+x.faults+' fallos · '+x.rights+'/30 aciertos</div></div><b>'+x.points+' pts</b></div>').join(""):'<p class="muted">Todavía no hay resultados. ¡Sé el primero en entrar en el ranking!</p>';
+ $("rankMode").textContent="Modo local: configura Firebase para compartir el ranking entre dispositivos.";
+}
+async function saveScore(score){
+ if(db){
+  try{
+   await db.collection("scores").add({
+    name: player, points: score.points, faults: score.faults, rights: score.rights,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+   });
+   $("saveStatus").textContent="✅ Resultado guardado en el ranking global de Firebase.";
+   await renderRanking();
+   return;
+  }catch(e){console.error(e);$("saveStatus").textContent="⚠️ No se pudo guardar en Firestore. Revisa las reglas y la configuración." ;return}
+ }
+ const r=getRanks();r.push({name:player,points:score.points,faults:score.faults,rights:score.rights,date:Date.now()});
+ try{localStorage.setItem("luchaCarnetRanks",JSON.stringify(r.slice(-500)))}catch(e){}
+ $("saveStatus").textContent="Guardado solo en este navegador. Añade la configuración de Firebase para usar el ranking global.";
+ renderRanking();
+}
+function show(id){["home","game","result"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function start(){player=$("player").value.trim().slice(0,24);if(!player){$("player").focus();$("player").placeholder="Escribe tu nombre para jugar";return}order=Q.map((q,i)=>i);for(let i=order.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}idx=0;chosen=null;misses=[];finished=false;show("game");draw()}
+function draw(){
+ $("counter").textContent="Pregunta "+(idx+1)+" de 30";$("progress").style.width=(idx/30*100)+"%";$("errors").textContent="Fallos: "+misses.length;$("category").textContent=Q[order[idx]].c.toUpperCase();$("question").textContent=Q[order[idx]].q;$("feedback").classList.add("hidden");$("feedback").innerHTML="";$("next").disabled=true;$("next").textContent=idx===29?"Terminar test ✓":"Confirmar respuesta →";chosen=null;
+ const q=Q[order[idx]];$("answers").innerHTML=q.a.map((a,i)=>'<button class="answer" data-choice="'+i+'"><span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+safe(a)+'</span></button>').join("");
+ $("answers").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  if(chosen!==null)return;chosen=Number(b.dataset.choice);
+  $("answers").querySelectorAll("button").forEach(x=>{x.disabled=true;let n=Number(x.dataset.choice);if(n===q.k)x.classList.add("correct");else if(n===chosen)x.classList.add("wrong")});
+  let ok=chosen===q.k;if(!ok)misses.push({q,selected:chosen,number:idx+1});
+  $("errors").textContent="Fallos: "+misses.length;$("feedback").classList.remove("hidden");$("feedback").innerHTML='<b>'+(ok?'✅ ¡Correcto!':'❌ Respuesta incorrecta')+'</b><div style="margin-top:5px">'+safe(q.e)+'</div>';$("next").disabled=false;$("next").focus();
+ }));
+}
+function next(){if(chosen===null)return;idx++;if(idx>=30)end();else draw()}
+async function end(){
+ finished=true;const faults=misses.length,points=pointsFor(faults),rights=30-faults,pakete=faults>3;show("result");
+ $("resultHero").innerHTML=pakete?'<div style="font-size:66px">🤦‍♂️ 👎 👎</div><h2 style="font-size:39px;font-weight:1000;color:#e04c4c">¡PAKETE!</h2><p><b>¡Te has pasado de 3 fallos!</b></p><p class="muted">Repasa los errores y vuelve a intentarlo.</p>':'<div style="font-size:56px">'+(faults===0?'🏆':faults===1?'🥇':faults===2?'🚗':'💪')+'</div><h2 style="font-size:30px;font-weight:950">'+(faults===0?'¡EXAMEN PERFECTO!':faults===1?'¡CASI PERFECTO!':faults===2?'¡BUEN TRABAJO!':'¡APROBADO POR LOS PELOS!')+'</h2><p class="muted">Has terminado las 30 preguntas.</p><div class="bigscore">'+points+' <span style="font-size:20px">puntos</span></div>';
+ $("rightCount").textContent=rights;$("wrongCount").textContent=faults;$("pointCount").textContent=points;$("resultMessage").textContent="Jugador: "+player+". Has acertado "+rights+" de 30 preguntas. "+(pakete?"Con 4 o más fallos no se consiguen puntos en esta ronda.":"Tu resultado se enviará al ranking.");
+ $("mistakes").innerHTML=misses.length?misses.map(m=>'<div class="review"><b>Pregunta '+m.number+': '+safe(m.q.q)+'</b><div style="color:#d9534f;margin-top:8px">❌ Tu respuesta: '+safe(m.q.a[m.selected])+'</div><div style="color:#27956a;margin-top:5px">✅ Correcta: '+safe(m.q.a[m.q.k])+'</div><p class="muted">'+safe(m.q.e)+'</p></div>').join(""):'<div style="padding:20px;text-align:center"><div style="font-size:44px">🎉</div><b>¡No has cometido ningún fallo!</b><p class="muted">¡Has conseguido la puntuación máxima!</p></div>';
+ $("saveStatus").textContent="Guardando resultado…";await saveScore({points,faults,rights});renderRanking("ranking2");
+}
+$("start").addEventListener("click",start);$("player").addEventListener("keydown",e=>{if(e.key==="Enter")start()});$("next").addEventListener("click",next);$("refresh").addEventListener("click",()=>renderRanking());$("again").addEventListener("click",()=>{show("home");renderRanking();$("player").value=player;window.scrollTo({top:0,behavior:"smooth"})});$("toRanking").addEventListener("click",()=>{$("endRanking").classList.toggle("hidden");renderRanking("ranking2");if(!$("endRanking").classList.contains("hidden"))$("endRanking").scrollIntoView({behavior:"smooth",block:"start"})});
+renderRanking();
+</script>
+</body></html>
