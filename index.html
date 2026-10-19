@@ -24,23 +24,16 @@ input{width:100%;padding:12px;border:1px solid #cbd7df;border-radius:10px;font:i
 </style>
 </head>
 <body><main class="wrap">
-<header class="hero"><div style="font-size:38px">🚘 🏁</div><h1>LUCHA POR EL CARNET</h1><p>¿Tienes lo que hay que tener para aprobar?</p><p>30 preguntas al azar de un banco de <b id="bank"></b> · Permiso B · España</p></header>
+<header class="hero"><div style="font-size:38px">🚘 🏁</div><h1>LUCHA POR EL CARNET</h1><p>¿Tienes lo que hay que tener para aprobar?</p><p>30 preguntas · Permiso B · España</p></header>
 
 <section id="home">
 <div class="panel">
-<h2>🎮 ¡Empieza el reto!</h2><p class="muted">30 preguntas de práctica inspiradas en las normas de circulación españolas. Cada test incluye <b>preguntas trampa</b> ⚠️ de las que te hacen dudar. Al acabar podrás revisar todos tus errores.</p>
+<h2>🎮 ¡Empieza el reto!</h2><p class="muted">30 preguntas de práctica inspiradas en las normas de circulación españolas. Al acabar podrás revisar todos tus errores.</p>
 <label for="player"><b>Tu nombre para el ranking</b></label><input id="player" maxlength="24" placeholder="Ej. ConductorPro" autocomplete="nickname">
 <button id="start" class="btn primary" style="width:100%">EMPEZAR TEST →</button>
 <p class="muted">Puntuación: 0 fallos = 5 puntos · 1 fallo = 3 · 2 fallos = 2 · 3 fallos = 1 · 4 o más = PAKETE 👎</p>
 </div>
-<div class="panel"><div class="row"><h2>🏆 Ranking de jugadores</h2><button id="refresh" class="btn">Actualizar</button></div><div id="ranking"><p class="muted">Cargando ranking…</p></div><p id="rankMode" class="muted">Conectando con el ranking global…</p></div>
-<div class="panel"><h3>📚 Fuentes</h3><p class="muted">Las preguntas se basan en la normativa española de tráfico. Tras cada respuesta verás la norma concreta.</p><ul class="muted" style="padding-left:20px;line-height:1.6;margin:8px 0 0">
-<li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2015-11722" target="_blank" rel="noopener">Ley sobre Tráfico y Seguridad Vial (RDL 6/2015)</a></li>
-<li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2003-23514" target="_blank" rel="noopener">Reglamento General de Circulación (RD 1428/2003)</a></li>
-<li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-1999-1824" target="_blank" rel="noopener">Reglamento General de Vehículos (RD 2822/1998)</a></li>
-<li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2020-14449" target="_blank" rel="noopener">RD 970/2020 (30 km/h urbano, ciclistas)</a></li>
-<li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2021-4297" target="_blank" rel="noopener">RD 159/2021 (auxilio en vías, baliza V-16)</a></li>
-<li><a href="https://www.dgt.es" target="_blank" rel="noopener">DGT – Dirección General de Tráfico</a></li></ul><p class="muted">¿Quieres practicar también con los test oficiales? <a href="https://sede.dgt.gob.es/es/permisos-de-conducir/test-de-practica/" target="_blank" rel="noopener">Test de la DGT →</a></p></div>
+<div class="panel"><div class="row"><h2>🏆 Ranking de jugadores</h2><button id="refresh" class="btn">Actualizar</button></div><div id="ranking"><p class="muted">Cargando ranking…</p></div><p id="rankMode" class="muted">El ranking local se guarda en este navegador. Para compartirlo entre dispositivos, configura Supabase siguiendo las instrucciones que acompañan al archivo.</p></div>
 <div class="panel"><h3>📋 Reglas</h3><p class="muted">Cada test contiene 30 preguntas y una respuesta correcta por pregunta. Las preguntas son educativas, no preguntas oficiales reproducidas de la DGT.</p></div>
 </section>
 
@@ -66,10 +59,10 @@ input{width:100%;padding:12px;border:1px solid #cbd7df;border-radius:10px;font:i
    firebaseConfig no es una contraseña. Protege la base de datos con reglas.
 */
 const firebaseConfig = {
-  apiKey: "AIzaSyCiFAVYWi3oVyJKBn7CWTQ5Tf75X9fJYpA",
-  authDomain: "lucha-por-el-carnet-b6bc8.firebaseapp.com",
-  projectId: "lucha-por-el-carnet-b6bc8",
-  appId: "1:815386155041:web:81b95c247633fe52252b60"
+  apiKey: "AIzaSyCuG9GHgQHSdvQn4Fz3yfBACWD9tXDjc3Y",
+  authDomain: "lucha-por-el-carnet.firebaseapp.com",
+  projectId: "lucha-por-el-carnet",
+  appId: "1:210534818345:web:c4156f526131aebaf07238"
 };
 let db = null;
 try {
@@ -82,59 +75,98 @@ try {
   console.error("No se pudo inicializar Firebase:", e);
 }
 
-/* ============================================================
-   BANCO DE PREGUNTAS
-   - t:1 => pregunta trampa
-   - k: índice de la respuesta correcta (se re-mezcla al cargar)
-   ============================================================ */
 const Q = [
-/* ---------- BLOQUE 1: BASE ---------- */
-{c:"Señales",q:"Ante una señal de STOP, ¿qué debes hacer?",a:["Reducir la velocidad y continuar si no viene nadie.","Detenerte completamente y comprobar que puedes continuar con seguridad.","Detenerte solo si hay peatones."],k:1,e:"La señal de STOP obliga a detener el vehículo por completo y a ceder el paso."},
-{c:"Velocidad",q:"Como norma general, ¿cuál es la velocidad máxima de un turismo en autopista?",a:["100 km/h.","120 km/h.","130 km/h."],k:1,e:"El límite genérico para turismos en autopistas y autovías es 120 km/h."},
-{c:"Alcohol y drogas",q:"¿Qué debes hacer si has consumido drogas y vas a conducir?",a:["Conducir despacio.","Esperar media hora y conducir.","No conducir."],k:2,e:"Las drogas alteran percepción, atención y reflejos. No debes conducir."},
-{c:"Prioridad",q:"En una intersección sin señalizar, ¿quién tiene prioridad como regla general?",a:["El que se aproxima por la derecha.","El vehículo más grande.","El que circula más rápido."],k:0,e:"Se cede el paso a los vehículos que se aproximan por la derecha, salvo excepciones."},
-{c:"Seguridad",q:"¿Cuándo deben usar el cinturón los ocupantes de un turismo?",a:["Solo en carretera.","Solo los delanteros.","Como regla general, en todos los asientos que dispongan de él."],k:2,e:"El cinturón es obligatorio en todos los asientos que lo tengan."},
-{c:"Señales",q:"¿Qué indica una señal circular con borde rojo y el número 50?",a:["Velocidad mínima.","Velocidad máxima de 50 km/h.","Velocidad recomendada."],k:1,e:"Circular con borde rojo y cifra indica velocidad máxima permitida."},
-{c:"Adelantamientos",q:"¿Cuándo está permitido adelantar por la derecha?",a:["Siempre que tengas prisa.","Nunca.","En situaciones permitidas, como determinadas vías urbanas con varios carriles del mismo sentido."],k:2,e:"Normalmente por la izquierda, pero hay supuestos específicos que permiten adelantar por la derecha."},
-{c:"Peatones",q:"Te aproximas a un paso de peatones y una persona está cruzando. ¿Qué haces?",a:["Tocar el claxon.","Detenerte y cederle el paso.","Pasar si calculas que hay espacio."],k:1,e:"Debes ceder el paso a los peatones que cruzan por un paso señalizado."},
-{c:"Emergencias",q:"Se aproxima una ambulancia en servicio urgente con señales luminosas y acústicas. ¿Cómo actúas?",a:["Facilitas su paso de forma segura.","Aceleras para ir delante.","Te detienes en cualquier lugar aunque bloquees."],k:0,e:"Debes facilitar el paso al vehículo prioritario sin crear nuevos riesgos."},
-{c:"Luces",q:"¿Cuándo debes utilizar el alumbrado de cruce?",a:["Únicamente con lluvia de noche.","De noche y cuando la normativa lo exige, como en túneles señalizados.","Solo en autopistas."],k:1,e:"El alumbrado de cruce se usa de noche, en túneles y en las circunstancias exigidas."},
-{c:"Distancia",q:"¿Qué distancia debes mantener con el vehículo de delante?",a:["La que permita detenerte sin colisionar si frena bruscamente.","Exactamente dos metros.","La mínima posible."],k:0,e:"Debes dejar distancia suficiente para detenerte ante una frenada imprevista."},
-{c:"Móvil",q:"¿Puedes sujetar el móvil con la mano mientras conduces?",a:["Sí, un instante.","Sí, despacio.","No."],k:2,e:"Está prohibido usar el móvil sujetándolo con la mano durante la conducción."},
-{c:"Clima",q:"En una carretera mojada, ¿qué ocurre con la distancia de frenado?",a:["Generalmente aumenta.","Siempre disminuye.","No cambia."],k:0,e:"La menor adherencia sobre mojado puede aumentar mucho la distancia de frenado."},
-{c:"Neumáticos",q:"¿Qué riesgo supone circular con neumáticos muy desgastados?",a:["Mejora la adherencia.","Aumenta el riesgo de aquaplaning y empeora la adherencia.","Ninguno."],k:1,e:"Un dibujo insuficiente reduce la evacuación de agua y perjudica la seguridad."},
-{c:"Rotondas",q:"Al entrar en una glorieta, si no hay señalización, ¿a quién cedes el paso?",a:["A los vehículos que ya circulan por ella.","A los que esperan detrás.","A los que entran por tu derecha siempre."],k:0,e:"Debes ceder el paso a los vehículos que ya circulan por la glorieta."},
-{c:"Carriles",q:"En una autopista, ¿por qué carril debes circular normalmente?",a:["Por el izquierdo.","Por el derecho, usando los demás para adelantar.","Por el central."],k:1,e:"La norma general es circular por el carril más a la derecha."},
-{c:"Estacionamiento",q:"¿Puedes estacionar delante de una salida de emergencia señalizada?",a:["Sí, con luces de emergencia.","Sí, cinco minutos.","No, si obstaculizas la salida o infringes la señalización."],k:2,e:"No debes bloquear una salida de emergencia."},
-{c:"Alcohol",q:"¿Qué efecto puede tener el alcohol, incluso en pequeñas cantidades?",a:["Mejora la reacción.","Puede reducir la atención y los reflejos.","Solo afecta a noveles."],k:1,e:"El alcohol altera capacidades necesarias para conducir."},
-{c:"Accidentes",q:"Presencias un accidente con heridos. ¿Qué conducta general es correcta?",a:["Proteger, avisar y socorrer sin agravar.","Mover siempre a los heridos.","Marcharte si no has participado."],k:0,e:"Conducta PAS: proteger, avisar y socorrer."},
-{c:"Vías urbanas",q:"En una calle urbana con un único carril por sentido, sin señalización, ¿límite genérico?",a:["20 km/h.","30 km/h.","50 km/h."],k:1,e:"El límite genérico es 30 km/h en vías urbanas de un carril por sentido."},
-{c:"Seguridad infantil",q:"¿Cómo deben viajar los menores de estatura igual o inferior a 135 cm?",a:["En el asiento delantero con cinturón de adulto.","Con sistema de retención infantil adecuado y en asientos traseros, con excepciones legales.","En cualquier asiento sin sistema."],k:1,e:"La norma general exige sistema de retención infantil adecuado y asientos traseros."},
-{c:"Averías",q:"Tu vehículo queda inmovilizado y necesitas señalizar. ¿Qué debes tener en cuenta?",a:["La normativa vigente sobre señalización y el uso de la baliza V-16 conectada cuando resulte obligatoria.","Colocar siempre un triángulo a cualquier distancia.","No señalizar si es de día."],k:0,e:"La señalización debe cumplir la normativa vigente, incluida la baliza V-16 conectada cuando proceda."},
-{c:"Adelantamientos",q:"Antes de adelantar, ¿qué debes comprobar?",a:["Que está permitido, hay visibilidad y espacio, y no pones a nadie en peligro.","Solo la potencia del motor.","Que el de detrás frene."],k:0,e:"Comprueba visibilidad, distancia, señalización y que puedas completar la maniobra con seguridad."},
-{c:"Señales",q:"Una señal triangular con borde rojo advierte, por lo general, de:",a:["Una obligación.","Un peligro.","Fin de prohibición."],k:1,e:"Las triangulares con borde rojo suelen advertir de peligros."},
-{c:"Túneles",q:"Al aproximarte a un túnel, ¿qué debes hacer?",a:["Encender el alumbrado correspondiente y respetar señales y distancia de seguridad.","Parar para adaptar la vista.","Usar luces largas siempre."],k:0,e:"En túneles usa el alumbrado obligatorio y respeta límites y distancia."},
-{c:"Fatiga",q:"En un viaje largo empiezas a sentir sueño. ¿Cuál es la mejor decisión?",a:["Abrir la ventanilla y seguir.","Acelerar para llegar antes.","Detenerte en un lugar seguro y descansar."],k:2,e:"La fatiga reduce atención y reflejos. Para en un lugar seguro y descansa."},
-{c:"Mantenimiento",q:"¿Qué debes hacer si se enciende un testigo rojo grave del motor o presión de aceite?",a:["Ignorarlo si sigue andando.","Detenerte en un lugar seguro y consultar las indicaciones del vehículo.","Acelerar para que desaparezca."],k:1,e:"Un testigo rojo grave requiere actuar de inmediato y detenerse de forma segura."},
-{c:"Usuarios vulnerables",q:"Al adelantar a un ciclista, ¿qué debes hacer?",a:["Mantener separación lateral suficiente y cumplir las reglas aplicables.","Pasar muy cerca si no viene nadie.","Tocar el claxon y mantener velocidad."],k:0,e:"Respeta la separación lateral mínima legal y las condiciones de seguridad."},
-{c:"Prioridad",q:"En un paso estrecho sin señalización, si no podéis cruzaros, ¿cómo procedes?",a:["Avanzar siempre.","Aplicar las reglas de prioridad y actuar con prudencia, atendiendo a la pendiente cuando corresponda.","Retroceder siempre."],k:1,e:"Hay reglas específicas de prioridad en pasos estrechos; evita forzar el cruce."},
-{c:"Documentación",q:"¿Qué documentación debes llevar o tener disponible para circular legalmente?",a:["La exigible del conductor y del vehículo conforme a la normativa.","Solo el DNI.","Solo el recibo del combustible."],k:0,e:"Debes cumplir los requisitos de permiso y documentación del vehículo."},
-{c:"Conducción segura",q:"Al acercarte a un semáforo que cambia a amarillo fijo, ¿qué haces?",a:["Acelerar siempre.","Detenerte, salvo que no puedas hacerlo con seguridad suficiente.","Frenar bruscamente sin mirar."],k:1,e:"El amarillo fijo obliga a detenerse salvo que no puedas con seguridad."},
-{c:"Velocidad",q:"¿Velocidad máxima genérica de un turismo en carretera convencional?",a:["90 km/h.","100 km/h.","80 km/h."],k:0,e:"El límite genérico en carreteras convencionales es 90 km/h."},
-{c:"Velocidad",q:"¿Qué velocidad mínima deben poder alcanzar los vehículos para circular por autopista?",a:["40 km/h.","60 km/h.","80 km/h."],k:1,e:"No pueden circular por autopistas/autovías los que no alcancen 60 km/h."},
-{c:"Vías urbanas",q:"En calle urbana con dos o más carriles por sentido, sin señalización, ¿límite genérico?",a:["30 km/h.","50 km/h.","60 km/h."],k:1,e:"El límite genérico es 50 km/h con dos o más carriles por sentido."},
-{c:"Vías urbanas",q:"En calle con plataforma única, ¿límite genérico?",a:["20 km/h.","30 km/h.","40 km/h."],k:0,e:"En vías de plataforma única el límite genérico es 20 km/h."},
-{c:"Alcohol",q:"¿Tasa máxima general de alcohol en aire espirado?",a:["0,15 mg/l.","0,25 mg/l.","0,50 mg/l."],k:1,e:"La tasa general es 0,25 mg/l en aire espirado (0,5 g/l en sangre)."},
-{c:"Alcohol",q:"Si llevas menos de dos años con el permiso, ¿tasa máxima en aire espirado?",a:["0,15 mg/l.","0,25 mg/l.","0,50 mg/l."],k:0,e:"Para noveles y profesionales la tasa máxima es 0,15 mg/l."},
-{c:"Alcohol",q:"¿Cómo se elimina el alcohol del organismo?",a:["Con café o ducha fría.","Solo con el paso del tiempo.","Comiendo mucho."],k:1,e:"Ningún truco acelera la eliminación; solo el tiempo."},
-{c:"Alcohol y drogas",q:"Un medicamento advierte que puede afectar a la conducción. ¿Qué haces?",a:["Conducir con más atención.","Consultar con médico o farmacéutico y no conducir si te afecta.","Tomar la mitad."],k:1,e:"Sigue la indicación sanitaria y no conduzcas si te afecta."},
-{c:"Permiso",q:"¿Cuántos puntos tiene como regla general un conductor consolidado?",a:["8 puntos.","12 puntos.","15 puntos."],k:1,e:"El saldo inicial general es de 12 puntos."},
-{c:"Permiso",q:"¿Edad mínima general para el permiso B?",a:["16 años.","18 años.","21 años."],k:1,e:"Se exigen 18 años cumplidos para el permiso B."},
-{c:"Seguro",q:"¿Qué seguro es obligatorio para circular con un turismo?",a:["Todo riesgo.","Responsabilidad civil obligatoria.","Contra robo."],k:1,e:"Es obligatorio el seguro de responsabilidad civil obligatoria."},
-{c:"ITV",q:"¿Cuándo pasa la primera ITV un turismo particular nuevo?",a:["A los 2 años.","A los 4 años.","A los 6 años."],k:1,e:"La primera inspección es a los 4 años desde la matriculación."},
-{c:"ITV",q:"Turismo particular de más de 10 años. ¿Frecuencia de ITV?",a:["Cada 2 años.","Anualmente.","Cada 3 años."],k:1,e:"A partir de los 10 años la ITV es anual."},
-{c:"Señales",q:"¿Qué forma tiene la señal de STOP?",a:["Triangular.","Octogonal.","Circular."],k:1,e:"La señal de STOP es octogonal, fondo rojo y letras blancas."},
-{c:"Señales",q:"Triángulo con vértice hacia abajo y borde rojo significa:",a:["Peligro.","Ceda el paso.","Prohibido adelantar."],k:1,e:"El triángulo invertido con borde rojo es ceda el paso."},
-{c:"Señales",q:"Señales circulares de fondo azul son, por lo general:",a:["Prohibición.","Obligación.","Peligro."],k:1,e:"Las circulares azules indican obligación."},
-{c:"Señales",q:"Señal circular roja con banda blanca horizontal indica:",a:["Entrada prohibida.","Fin de prohibición.","Ceda el paso."],k:0,e:"Es entrada prohibida."},
-{c:"Señales",q:"Rombo amarillo con borde blanco indica:
+{c:"Señales",q:"Ante una señal de STOP, ¿qué debes hacer?",a:["Reducir la velocidad y continuar si no viene nadie.","Detenerte completamente y comprobar que puedes continuar con seguridad.","Detenerte solo si hay peatones."],k:1,e:"La señal de STOP obliga a detener el vehículo por completo y a ceder el paso. No basta con reducir la velocidad."},
+{c:"Velocidad",q:"Como norma general, ¿cuál es la velocidad máxima de un turismo en autopista?",a:["100 km/h.","120 km/h.","130 km/h."],k:1,e:"El límite genérico para turismos en autopistas y autovías es 120 km/h, salvo señalización específica."},
+{c:"Alcohol y drogas",q:"¿Qué debes hacer si has consumido drogas y vas a conducir?",a:["Conducir despacio para compensar sus efectos.","Esperar media hora y conducir.","No conducir."],k:2,e:"Las drogas pueden alterar la percepción, la atención y los reflejos. No debes conducir bajo sus efectos."},
+{c:"Prioridad",q:"En una intersección sin señalizar, como regla general, ¿quién tiene prioridad?",a:["El vehículo que se aproxima por la derecha, salvo excepciones.","El vehículo más grande.","El vehículo que circula más rápido."],k:0,e:"Como regla general, se cede el paso a los vehículos que se aproximan por la derecha, con las excepciones previstas en la normativa."},
+{c:"Seguridad",q:"¿Cuándo deben usar el cinturón de seguridad los ocupantes de un turismo?",a:["Solo en carretera.","Solo los ocupantes de los asientos delanteros.","Como regla general, en todos los asientos que dispongan de él."],k:2,e:"El cinturón es obligatorio, como regla general, tanto en los asientos delanteros como en los traseros."},
+{c:"Señales",q:"¿Qué indica una señal circular con borde rojo y el número 50?",a:["Velocidad mínima de 50 km/h.","Velocidad máxima de 50 km/h.","Velocidad recomendada de 50 km/h."],k:1,e:"La señal circular con borde rojo y una cifra indica la velocidad máxima permitida."},
+{c:"Adelantamientos",q:"¿Cuándo está permitido adelantar por la derecha?",a:["Siempre que tengas prisa.","Nunca, sin excepciones.","En situaciones permitidas, por ejemplo, en determinadas vías urbanas con varios carriles delimitados para el mismo sentido."],k:2,e:"El adelantamiento se realiza normalmente por la izquierda, pero existen supuestos específicos en los que se permite adelantar por la derecha."},
+{c:"Peatones",q:"Te aproximas a un paso de peatones y una persona está cruzando. ¿Qué haces?",a:["Tocar el claxon para que se dé prisa.","Detenerte y cederle el paso.","Pasar si calculas que hay espacio."],k:1,e:"Debes ceder el paso a los peatones que estén cruzando por un paso debidamente señalizado."},
+{c:"Emergencias",q:"Se aproxima una ambulancia en servicio urgente con señales luminosas y acústicas. ¿Cómo actúas?",a:["Facilitas su paso de forma segura.","Aceleras para ir delante de ella.","Te detienes inmediatamente en cualquier lugar, aunque bloquees el paso."],k:0,e:"Debes facilitar el paso al vehículo prioritario, apartándote de forma segura sin crear nuevos riesgos."},
+{c:"Luces",q:"¿Cuándo debes utilizar el alumbrado de cruce?",a:["Únicamente cuando llueve de noche.","De noche y en las circunstancias en que la normativa lo exige, como en túneles señalizados.","Solo en autopistas."],k:1,e:"El alumbrado de cruce debe utilizarse de noche y en túneles, así como en las demás circunstancias exigidas por la normativa."},
+{c:"Distancia",q:"¿Qué distancia debes mantener con el vehículo que circula delante?",a:["La que permita detenerte sin colisionar si frena bruscamente.","Exactamente dos metros.","La mínima posible para evitar que se interpongan otros vehículos."],k:0,e:"Debes dejar una distancia de seguridad suficiente para poder detenerte ante una frenada imprevista."},
+{c:"Móvil",q:"¿Puedes sujetar el teléfono móvil con la mano mientras conduces?",a:["Sí, si solo miras la pantalla un instante.","Sí, si circulas despacio.","No."],k:2,e:"Está prohibido utilizar el móvil sujetándolo con la mano durante la conducción, salvo las excepciones legalmente previstas."},
+{c:"Clima",q:"En una carretera mojada, ¿qué ocurre con la distancia de frenado?",a:["Generalmente aumenta.","Siempre disminuye.","No cambia."],k:0,e:"La menor adherencia sobre pavimento mojado puede aumentar considerablemente la distancia de frenado."},
+{c:"Neumáticos",q:"¿Qué riesgo supone circular con neumáticos muy desgastados?",a:["Mejora la adherencia en lluvia.","Aumenta el riesgo de aquaplaning y empeora la adherencia.","Ninguno si los neumáticos están inflados."],k:1,e:"Un dibujo insuficiente reduce la capacidad de evacuar agua y puede perjudicar la adherencia y la seguridad."},
+{c:"Rotondas",q:"Al entrar en una glorieta, si no hay señalización que indique otra cosa, ¿a quién debes ceder el paso?",a:["A los vehículos que ya circulan por ella.","A los que esperan detrás de ti.","A los vehículos que van a entrar por tu derecha, siempre."],k:0,e:"Como regla general, debes ceder el paso a los vehículos que ya circulan por la glorieta."},
+{c:"Carriles",q:"En una autopista, ¿por qué carril debes circular normalmente?",a:["Por el izquierdo.","Por el derecho, utilizando los demás para adelantar cuando corresponda.","Por el carril central en todo momento."],k:1,e:"La norma general es circular por el carril situado más a la derecha, dejando los demás para las maniobras permitidas."},
+{c:"Estacionamiento",q:"¿Puedes estacionar delante de una salida de emergencia señalizada?",a:["Sí, si dejas las luces de emergencia encendidas.","Sí, durante cinco minutos.","No, si obstaculizas la salida o infringes la señalización aplicable."],k:2,e:"No debes bloquear una salida de emergencia ni estacionar donde lo prohíban las normas o señales."},
+{c:"Alcohol",q:"¿Qué efecto puede tener el alcohol, incluso en cantidades pequeñas?",a:["Mejora la capacidad de reacción.","Puede reducir la atención y los reflejos.","Solo afecta a conductores noveles."],k:1,e:"El alcohol puede alterar las capacidades necesarias para conducir. La opción más segura es no consumirlo antes de conducir."},
+{c:"Accidentes",q:"Presencias un accidente con heridos. ¿Qué conducta general es correcta?",a:["Proteger la zona, avisar a emergencias y socorrer sin agravar la situación.","Mover siempre a los heridos inmediatamente.","Marcharte si no has participado."],k:0,e:"La conducta PAS consiste en proteger, avisar y socorrer, evitando riesgos y movimientos innecesarios de los heridos."},
+{c:"Vías urbanas",q:"En una calle urbana con un único carril por sentido, sin señalización específica, ¿cuál es el límite genérico para un turismo?",a:["20 km/h.","30 km/h.","50 km/h."],k:1,e:"El límite genérico es 30 km/h en vías urbanas de un único carril por sentido, salvo las excepciones previstas y la señalización."},
+{c:"Seguridad infantil",q:"¿Cómo deben viajar los menores de estatura igual o inferior a 135 cm en un turismo?",a:["Siempre en el asiento delantero con cinturón de adulto.","Como norma general, con un sistema de retención infantil adecuado y en los asientos traseros, con las excepciones legales.","En cualquier asiento sin sistema especial."],k:1,e:"La norma general exige un sistema de retención infantil adecuado y viajar en los asientos traseros, con excepciones reglamentarias."},
+{c:"Averías",q:"Tu vehículo queda inmovilizado en una vía y necesitas señalizar el peligro. ¿Qué debes tener en cuenta?",a:["La normativa vigente sobre señalización de vehículos inmovilizados y el uso de la baliza V-16 conectada cuando resulte obligatoria.","Colocar siempre un triángulo a cualquier distancia sin valorar el riesgo.","No señalizar si es de día."],k:0,e:"La señalización debe cumplir la normativa vigente. En España, la baliza V-16 conectada es el medio reglamentario obligatorio de señalización de vehículos inmovilizados desde el 1 de enero de 2026."},
+{c:"Adelantamientos",q:"Antes de adelantar a otro vehículo, ¿qué debes comprobar?",a:["Que la maniobra está permitida, hay visibilidad y espacio suficientes y no pones a nadie en peligro.","Solo que el motor tenga suficiente potencia.","Que el vehículo de detrás frene."],k:0,e:"Antes de adelantar debes comprobar la visibilidad, la distancia, la señalización y que puedas completar la maniobra con seguridad."},
+{c:"Señales",q:"Una señal triangular con borde rojo advierte, por lo general, de:",a:["Una obligación.","Un peligro.","El fin de una prohibición."],k:1,e:"Las señales triangulares con borde rojo suelen advertir de peligros en la vía."},
+{c:"Túneles",q:"Al aproximarte a un túnel, ¿qué debes hacer?",a:["Encender el alumbrado correspondiente y respetar las señales y la distancia de seguridad.","Parar para que los ojos se adapten.","Utilizar las luces largas siempre."],k:0,e:"En los túneles debes utilizar el alumbrado obligatorio, respetar los límites y mantener una distancia de seguridad adecuada."},
+{c:"Fatiga",q:"En un viaje largo empiezas a sentir sueño. ¿Cuál es la mejor decisión?",a:["Abrir la ventanilla y continuar sin parar.","Aumentar la velocidad para llegar antes.","Detenerte en un lugar seguro y descansar."],k:2,e:"La fatiga y la somnolencia reducen la atención y los reflejos. Debes parar en un lugar seguro y descansar."},
+{c:"Mantenimiento",q:"¿Qué debes hacer si se enciende un testigo rojo que indica un problema grave del motor o de la presión del aceite?",a:["Ignorarlo si el coche sigue andando.","Detenerte en un lugar seguro y consultar las indicaciones del vehículo.","Acelerar para que desaparezca."],k:1,e:"Un testigo rojo de advertencia grave requiere actuar de inmediato conforme al manual del vehículo y detenerse de forma segura cuando corresponda."},
+{c:"Usuarios vulnerables",q:"Al adelantar a un ciclista, ¿qué debes hacer?",a:["Mantener una separación lateral suficiente y cumplir las reglas de adelantamiento aplicables.","Pasar muy cerca si no viene nadie de frente.","Tocar el claxon y mantener la velocidad."],k:0,e:"Debes respetar la separación lateral mínima legal y las condiciones de seguridad exigidas para adelantar a ciclistas."},
+{c:"Prioridad",q:"En un paso estrecho sin señalización, cuando resulta imposible cruzarse al mismo tiempo, ¿cómo debes proceder?",a:["Avanzar siempre porque un turismo tiene prioridad sobre otros vehículos.","Aplicar las reglas de prioridad previstas y actuar con prudencia, atendiendo también a la pendiente cuando corresponda.","Retroceder siempre, sea cual sea la situación."],k:1,e:"En pasos estrechos sin señalización hay reglas específicas de prioridad y, en determinadas situaciones, influye la pendiente. Debes evitar forzar el cruce."},
+{c:"Documentación",q:"¿Qué documentación debes llevar o tener disponible para circular legalmente?",a:["La documentación exigible del conductor y del vehículo, conforme a la normativa vigente.","Únicamente el DNI.","Solo el recibo del combustible."],k:0,e:"Debes cumplir los requisitos de permiso de conducción y documentación del vehículo exigidos por la normativa. Algunos documentos pueden consultarse electrónicamente cuando esté permitido."},
+{c:"Conducción segura",q:"Al acercarte a un semáforo que cambia a amarillo fijo, ¿qué debes hacer?",a:["Acelerar siempre para pasar antes del rojo.","Detenerte, salvo que no puedas hacerlo en condiciones de seguridad suficientes.","Frenar bruscamente sin mirar detrás."],k:1,e:"El amarillo fijo obliga a detenerse, salvo que al encenderse estés tan cerca que no puedas hacerlo con seguridad suficiente."}
+];
+let order=[],idx=0,chosen=null,misses=[],player="",finished=false;
+const $=id=>document.getElementById(id);
+function safe(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function getRanks(){try{return JSON.parse(localStorage.getItem("luchaCarnetRanks")||"[]")}catch(e){return []}}
+function pointsFor(f){return f===0?5:f===1?3:f===2?2:f===3?1:0}
+function sortedRanks(r){return r.sort((a,b)=>b.points-a.points||a.faults-b.faults||a.date-b.date).slice(0,20)}
+async function renderRanking(target="ranking"){
+ const el=$(target);
+ if(db){
+  try{
+   const snap=await db.collection("scores").orderBy("points","desc").orderBy("faults","asc").orderBy("createdAt","asc").limit(20).get();
+   const rows=snap.docs.map(d=>d.data());
+   el.innerHTML=rows.length?rows.map((x,i)=>'<div class="rankrow"><span><b>'+(["🥇","🥈","🥉"][i]||("#"+(i+1)))+'</b></span><div><b>'+safe(x.name)+'</b><div class="muted">'+x.faults+' fallos · '+x.rights+'/30 aciertos</div></div><b>'+x.points+' pts</b></div>').join(""):'<p class="muted">Aún no hay resultados. ¡Sé el primero!</p>';
+   $("rankMode").textContent="Ranking global conectado a Firebase Cloud Firestore.";
+   return;
+  }catch(e){console.error(e);el.innerHTML='<p class="muted">No se pudo leer Firestore. Comprueba la configuración y las reglas de seguridad.</p>';return}
+ }
+ const r=sortedRanks(getRanks());
+ el.innerHTML=r.length?r.map((x,i)=>'<div class="rankrow"><span><b>'+(["🥇","🥈","🥉"][i]||("#"+(i+1)))+'</b></span><div><b>'+safe(x.name)+'</b><div class="muted">'+x.faults+' fallos · '+x.rights+'/30 aciertos</div></div><b>'+x.points+' pts</b></div>').join(""):'<p class="muted">Todavía no hay resultados. ¡Sé el primero en entrar en el ranking!</p>';
+ $("rankMode").textContent="Modo local: configura Firebase para compartir el ranking entre dispositivos.";
+}
+async function saveScore(score){
+ if(db){
+  try{
+   await db.collection("scores").add({
+    name: player, points: score.points, faults: score.faults, rights: score.rights,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+   });
+   $("saveStatus").textContent="✅ Resultado guardado en el ranking global de Firebase.";
+   await renderRanking();
+   return;
+  }catch(e){console.error(e);$("saveStatus").textContent="⚠️ No se pudo guardar en Firestore. Revisa las reglas y la configuración." ;return}
+ }
+ const r=getRanks();r.push({name:player,points:score.points,faults:score.faults,rights:score.rights,date:Date.now()});
+ try{localStorage.setItem("luchaCarnetRanks",JSON.stringify(r.slice(-500)))}catch(e){}
+ $("saveStatus").textContent="Guardado solo en este navegador. Añade la configuración de Firebase para usar el ranking global.";
+ renderRanking();
+}
+function show(id){["home","game","result"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function start(){player=$("player").value.trim().slice(0,24);if(!player){$("player").focus();$("player").placeholder="Escribe tu nombre para jugar";return}order=Q.map((q,i)=>i);for(let i=order.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}idx=0;chosen=null;misses=[];finished=false;show("game");draw()}
+function draw(){
+ $("counter").textContent="Pregunta "+(idx+1)+" de 30";$("progress").style.width=(idx/30*100)+"%";$("errors").textContent="Fallos: "+misses.length;$("category").textContent=Q[order[idx]].c.toUpperCase();$("question").textContent=Q[order[idx]].q;$("feedback").classList.add("hidden");$("feedback").innerHTML="";$("next").disabled=true;$("next").textContent=idx===29?"Terminar test ✓":"Confirmar respuesta →";chosen=null;
+ const q=Q[order[idx]];$("answers").innerHTML=q.a.map((a,i)=>'<button class="answer" data-choice="'+i+'"><span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+safe(a)+'</span></button>').join("");
+ $("answers").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  if(chosen!==null)return;chosen=Number(b.dataset.choice);
+  $("answers").querySelectorAll("button").forEach(x=>{x.disabled=true;let n=Number(x.dataset.choice);if(n===q.k)x.classList.add("correct");else if(n===chosen)x.classList.add("wrong")});
+  let ok=chosen===q.k;if(!ok)misses.push({q,selected:chosen,number:idx+1});
+  $("errors").textContent="Fallos: "+misses.length;$("feedback").classList.remove("hidden");$("feedback").innerHTML='<b>'+(ok?'✅ ¡Correcto!':'❌ Respuesta incorrecta')+'</b><div style="margin-top:5px">'+safe(q.e)+'</div>';$("next").disabled=false;$("next").focus();
+ }));
+}
+function next(){if(chosen===null)return;idx++;if(idx>=30)end();else draw()}
+async function end(){
+ finished=true;const faults=misses.length,points=pointsFor(faults),rights=30-faults,pakete=faults>3;show("result");
+ $("resultHero").innerHTML=pakete?'<div style="font-size:66px">🤦‍♂️ 👎 👎</div><h2 style="font-size:39px;font-weight:1000;color:#e04c4c">¡PAKETE!</h2><p><b>¡Te has pasado de 3 fallos!</b></p><p class="muted">Repasa los errores y vuelve a intentarlo.</p>':'<div style="font-size:56px">'+(faults===0?'🏆':faults===1?'🥇':faults===2?'🚗':'💪')+'</div><h2 style="font-size:30px;font-weight:950">'+(faults===0?'¡EXAMEN PERFECTO!':faults===1?'¡CASI PERFECTO!':faults===2?'¡BUEN TRABAJO!':'¡APROBADO POR LOS PELOS!')+'</h2><p class="muted">Has terminado las 30 preguntas.</p><div class="bigscore">'+points+' <span style="font-size:20px">puntos</span></div>';
+ $("rightCount").textContent=rights;$("wrongCount").textContent=faults;$("pointCount").textContent=points;$("resultMessage").textContent="Jugador: "+player+". Has acertado "+rights+" de 30 preguntas. "+(pakete?"Con 4 o más fallos no se consiguen puntos en esta ronda.":"Tu resultado se enviará al ranking.");
+ $("mistakes").innerHTML=misses.length?misses.map(m=>'<div class="review"><b>Pregunta '+m.number+': '+safe(m.q.q)+'</b><div style="color:#d9534f;margin-top:8px">❌ Tu respuesta: '+safe(m.q.a[m.selected])+'</div><div style="color:#27956a;margin-top:5px">✅ Correcta: '+safe(m.q.a[m.q.k])+'</div><p class="muted">'+safe(m.q.e)+'</p></div>').join(""):'<div style="padding:20px;text-align:center"><div style="font-size:44px">🎉</div><b>¡No has cometido ningún fallo!</b><p class="muted">¡Has conseguido la puntuación máxima!</p></div>';
+ $("saveStatus").textContent="Guardando resultado…";await saveScore({points,faults,rights});renderRanking("ranking2");
+}
+$("start").addEventListener("click",start);$("player").addEventListener("keydown",e=>{if(e.key==="Enter")start()});$("next").addEventListener("click",next);$("refresh").addEventListener("click",()=>renderRanking());$("again").addEventListener("click",()=>{show("home");renderRanking();$("player").value=player;window.scrollTo({top:0,behavior:"smooth"})});$("toRanking").addEventListener("click",()=>{$("endRanking").classList.toggle("hidden");renderRanking("ranking2");if(!$("endRanking").classList.contains("hidden"))$("endRanking").scrollIntoView({behavior:"smooth",block:"start"})});
+renderRanking();
+</script>
+</body></html>
